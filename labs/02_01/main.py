@@ -14,6 +14,12 @@ SEED = 18022004
 WINDOWS = (21, 51, 111)
 ALPHA = 0.05
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
+PLOT_FILES = {
+    "series": "01_Модельный_ряд_и_точный_тренд.png",
+    "all_trends": "02_Сравнение_среднего_и_медианы_с_точным_трендом.png",
+    "trend": "03_Оценки_тренда_по_методам_и_окнам.png",
+    "residuals": "04_Остатки_после_вычитания_трендов.png",
+}
 
 
 def generate_series(seed=SEED):
@@ -145,7 +151,7 @@ def save_plots(k, series, exact_trend, results, directory):
     ax.set(xlabel="k", ylabel="Значение", title=f"Модельный ряд, h={H}, seed={SEED}")
     ax.legend()
     ax.grid(alpha=0.25)
-    fig.savefig(directory / "series.png", dpi=160)
+    fig.savefig(directory / PLOT_FILES["series"], dpi=160)
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(12, 6), layout="constrained")
@@ -160,7 +166,7 @@ def save_plots(k, series, exact_trend, results, directory):
     ax.set(xlabel="k", ylabel="Значение", title="Сравнение всех шести оценок тренда")
     ax.legend(fontsize=8)
     ax.grid(alpha=0.25)
-    fig.savefig(directory / "all_trends.png", dpi=160)
+    fig.savefig(directory / PLOT_FILES["all_trends"], dpi=160)
     plt.close(fig)
 
     for kind in ("trend", "residuals"):
@@ -181,7 +187,7 @@ def save_plots(k, series, exact_trend, results, directory):
             ax.grid(alpha=0.25)
         if kind == "trend":
             axes[0, 0].legend(fontsize=8)
-        fig.savefig(directory / f"{kind}.png", dpi=160)
+        fig.savefig(directory / PLOT_FILES[kind], dpi=160)
         plt.close(fig)
 
 
@@ -203,7 +209,7 @@ def save_report(results, directory):
         "На краях окно сокращается: start=max(0,k−m), end=min(501,k+m+1); "
         "используются элементы x[start:end]. Среднее делится на фактическое число элементов. "
         "Так же обработаны края в принятом примере. Все шесть оценок содержат 501 значение.", "",
-        "![Модельный ряд](series.png)", "",
+        f"![Модельный ряд и точный тренд]({PLOT_FILES['series']})", "",
         "## Сравнение с точным трендом", "",
         "Все ошибки рассчитаны на полном ряде k=0,…,500, включая края, как в примере. "
         "MSE = mean((оценка − точный тренд)²); RMSE = √MSE; "
@@ -213,7 +219,8 @@ def save_report(results, directory):
     ]
     for row in rows:
         lines.append(f"| {row['method']} | {row['window']} | {row['mse']:.6f} | {row['mae']:.6f} | {row['rmse']:.6f} |")
-    lines += ["", "![Все тренды](all_trends.png)", "", "![Оценки тренда](trend.png)", "",
+    lines += ["", f"![Сравнение всех шести трендов]({PLOT_FILES['all_trends']})", "",
+              f"![Оценки по методам и окнам]({PLOT_FILES['trend']})", "",
               "## Проверка остатков", "",
               "Для каждого из шести трендов вычислены остатки rₖ=xₖ−оценка тренда. "
               "Оба критерия применяются ко всем 501 остаткам каждого варианта. "
@@ -254,7 +261,8 @@ def save_report(results, directory):
         lines.append(f"| {row['method']} | {row['window']} | {row['kendall_P']} | "
                      f"{row['kendall_Q']} | {row['tied_pairs']} | {row['kendall_tau']:.6f} | "
                      f"{row['kendall_z']:.4f} | {row['kendall_p']:.4f} |")
-    lines += ["", "![Остатки](residuals.png)", "", "## Выводы", "",
+    lines += ["", f"![Остатки после вычитания трендов]({PLOT_FILES['residuals']})", "",
+              "## Выводы", "",
               f"На этой реализации минимальная RMSE у метода «{best['method']}», "
               f"окно {best['window']}: {best['rmse']:.6f}. "
               "Это результат конкретного случайного ряда, а не универсальный выбор окна.", ""]
